@@ -62,7 +62,7 @@ def str_to_list(s: str, delimiter: str=",") -> List[str]:
 def find_project_root():
     while not os.path.exists("your_content"):
         last_cwd = os.getcwd()
-        os.chdir("..")
+        os.chdir("../src")
         if os.getcwd() == last_cwd:
             raise FileNotFoundError("Couldn't find a folder in the path matching 'your_content'. Make sure you're "
                                     "running this script from within the comic_git repository.")

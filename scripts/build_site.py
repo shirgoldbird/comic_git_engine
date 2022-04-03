@@ -130,7 +130,7 @@ def run_hook(theme: str, func: str, args: List[Any]) -> Any:
     :return: The return value of the function called, if one was found. Otherwise, None.
     """
     if os.path.exists(f"your_content/themes/{theme}/scripts/hooks.py"):
-        current_path = os.path.abspath(".")
+        current_path = os.path.abspath("")
         if current_path not in sys.path:
             sys.path.append(current_path)
             print(f"Path updated: {sys.path}")
