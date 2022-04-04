@@ -38,7 +38,7 @@
 {% endblock %}
 {% block script %}
 <script type="module">
-    import { load_page } from "{{ base_dir }}/src/js/infinite_scroll.js";
+    import { load_page } from "{{ base_dir }}/comic_git_engine/js/infinite_scroll.js";
     load_page("{{ comic_base_dir }}", "{{ content_base_dir }}");
 </script>
 {% endblock %}

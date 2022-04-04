@@ -445,7 +445,7 @@ def get_storylines(comic_data_dicts: List[Dict], show_uncategorized: bool) -> Or
 
 def write_html_files(comic_folder: str, comic_info: RawConfigParser, comic_data_dicts: List[Dict], global_values: Dict):
     # Load Jinja environment
-    template_folders = ["src/templates"]
+    template_folders = ["comic_git_engine/templates"]
     theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
     if theme:
         template_folders.insert(0, f"your_content/themes/{theme}/templates")

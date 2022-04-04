@@ -71,7 +71,7 @@ def find_project_root():
 def write_to_template(template_name: str, html_path: str, data_dict: Dict=None) -> None:
     """
     Searches for either an HTML or a TPL file named <template_name> in first the "templates" folder of your
-    theme directory, or the /src/templates directory. It then builds that template at the specified <html_path> using
+    theme directory, or the "templates" directory. It then builds that template at the specified <html_path> using
     the given <data_dict> as a list of variables to pass into the template when it's rendered.
  
     :param template_name: The name of the template file or HTML file you wish to load
