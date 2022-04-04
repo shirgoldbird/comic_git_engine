@@ -15,7 +15,6 @@ from time import strptime, time, strftime
 from typing import Dict, List, Tuple, Any, Union
 
 from PIL import Image
-from jinja2 import Environment, FileSystemLoader
 from markdown2 import Markdown
 from pytz import timezone
 
@@ -450,7 +449,7 @@ def write_html_files(comic_folder: str, comic_info: RawConfigParser, comic_data_
     if theme:
         template_folders.insert(0, f"your_content/themes/{theme}/templates")
     print(f"Template folders: {template_folders}")
-    utils.jinja_environment = Environment(loader=FileSystemLoader(template_folders))
+    utils.build_jinja_environment(template_folders)
     # Write individual comic pages
     print("Writing {} comic pages...".format(len(comic_data_dicts)))
     for comic_data_dict in comic_data_dicts:

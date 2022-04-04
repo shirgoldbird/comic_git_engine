@@ -1,10 +1,15 @@
 import os
 from configparser import RawConfigParser
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-from jinja2 import TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
-jinja_environment = None
+jinja_environment: Optional[Environment] = None
+
+
+def build_jinja_environment(template_folders):
+    global jinja_environment
+    jinja_environment = Environment(loader=FileSystemLoader(template_folders))
 
 
 def get_comic_url(comic_info: RawConfigParser):
