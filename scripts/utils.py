@@ -9,7 +9,7 @@ jinja_environment: Optional[Environment] = None
 
 def build_jinja_environment(template_folders):
     global jinja_environment
-    jinja_environment = Environment(loader=FileSystemLoader(template_folders))
+    jinja_environment = Environment(loader=FileSystemLoader(template_folders), autoescape=True)
 
 
 def get_comic_url(comic_info: RawConfigParser):
