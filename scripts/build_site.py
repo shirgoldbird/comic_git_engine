@@ -83,23 +83,6 @@ def read_info(filepath, to_dict=False):
     return info
 
 
-def get_option(comic_info: RawConfigParser, section: str, option: str, option_type: type=str, default: Any=None) \
-        -> Union[str, int, float, bool]:
-    if comic_info.has_section(section):
-        if comic_info.has_option(section, option):
-            if option_type == str:
-                return comic_info.get(section, option)
-            elif option_type == int:
-                return comic_info.getint(section, option)
-            elif option_type == float:
-                return comic_info.getfloat(section, option)
-            elif option_type == bool:
-                return comic_info.getboolean(section, option)
-            else:
-                raise ValueError(f"Invalid option type: {option_type}")
-    return default
-
-
 def get_links_list(comic_info: RawConfigParser):
     link_list = []
     for option in comic_info.options("Links Bar"):
@@ -169,7 +152,7 @@ def build_and_publish_comic_pages(comic_url: str, comic_folder: str, comic_info:
         home_page_text = ""
 
     # Write page info to comic HTML pages
-    show_uncategorized = get_option(comic_info, "Archive", "Show Uncategorized comics", option_type=bool, default=True)
+    show_uncategorized = comic_info.getboolean("Archive", "Show Uncategorized comics", fallback=True)
     # e.g. /base_dir/extra_comic
     comic_base_dir = f"{BASE_DIRECTORY}/{comic_folder}".rstrip("/")
     # e.g. /base_dir/your_content/extra_comic
@@ -181,9 +164,9 @@ def build_and_publish_comic_pages(comic_url: str, comic_folder: str, comic_info:
         "comic_author": comic_info.get("Comic Info", "Author"),
         "comic_description": comic_info.get("Comic Info", "Description"),
         "banner_image": web_path(
-            get_option(comic_info, "Comic Settings", "Banner image", default="/your_content/images/banner.png")
+            comic_info.get("Comic Settings", "Banner image", fallback="/your_content/images/banner.png")
         ),
-        "theme": get_option(comic_info, "Comic Settings", "Theme", default="default"),
+        "theme": comic_info.get("Comic Settings", "Theme", fallback="default"),
         "comic_url": comic_url,
         "base_dir": BASE_DIRECTORY,
         "comic_base_dir": comic_base_dir,
@@ -193,7 +176,7 @@ def build_and_publish_comic_pages(comic_url: str, comic_folder: str, comic_info:
         "use_thumbnails": comic_info.getboolean("Archive", "Use thumbnails"),
         "storylines": get_storylines(comic_data_dicts, show_uncategorized),
         "home_page_text": home_page_text,
-        "google_analytics_id": get_option(comic_info, "Google Analytics", "Tracking ID", default=""),
+        "google_analytics_id": comic_info.get("Google Analytics", "Tracking ID", fallback=""),
         "scheduled_post_count": scheduled_post_count,
     }
     # Update the global values with any custom values returned by the hook.py file's extra_global_value's function
@@ -217,10 +200,8 @@ def get_page_info_list(comic_folder: str, comic_info: RawConfigParser, delete_sc
     print(f"Local time is {local_time}")
     page_info_list = []
     scheduled_post_count = 0
-    auto_detect_comic_images = get_option(
-        comic_info, "Comic Settings", "Auto-detect comic images", option_type=bool, default=False
-    )
-    theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
+    auto_detect_comic_images = comic_info.getboolean("Comic Settings", "Auto-detect comic images", fallback=False)
+    theme = comic_info.get("Comic Settings", "Theme", fallback="default")
     for page_path in glob(f"your_content/{comic_folder}comics/*/"):
         filepath = f"{page_path}info.ini"
         if not os.path.exists(f"{page_path}info.ini"):
@@ -294,12 +275,12 @@ def get_transcripts(comic_folder: str, comic_info: RawConfigParser, page_name: s
     if not comic_info.getboolean("Transcripts", "Enable transcripts"):
         return OrderedDict()
     transcripts = OrderedDict()
-    if get_option(comic_info, "Transcripts", "Load transcripts from comic folder", option_type=bool, default=True):
+    if comic_info.getboolean("Transcripts", "Load transcripts from comic folder", fallback=True):
         load_transcripts_from_folder(transcripts, f"your_content/{comic_folder}comics", page_name)
-    transcripts_dir = get_option(comic_info, "Transcripts", "Transcripts folder", default=f"")
+    transcripts_dir = comic_info.get("Transcripts", "Transcripts folder", fallback="")
     if transcripts_dir:
         load_transcripts_from_folder(transcripts, transcripts_dir, page_name)
-    default_language = get_option(comic_info, "Transcripts", "Default language", default=f"English")
+    default_language = comic_info.get("Transcripts", "Default language", fallback="English")
     if default_language in transcripts:
         transcripts.move_to_end(default_language, last=False)
     return transcripts
@@ -353,7 +334,7 @@ def create_comic_data(comic_folder: str, comic_info: RawConfigParser, page_info:
         "post_html": post_html,
         "transcripts": get_transcripts(comic_folder, comic_info, page_info["page_name"]),
     }
-    theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
+    theme = comic_info.get("Comic Settings", "Theme", fallback="default")
     hook_result = run_hook(theme, "extra_comic_dict_processing", [comic_folder, comic_info, d])
     if hook_result:
         d = hook_result
@@ -450,7 +431,7 @@ def get_storylines(comic_data_dicts: List[Dict], show_uncategorized: bool) -> Or
 def write_html_files(comic_folder: str, comic_info: RawConfigParser, comic_data_dicts: List[Dict], global_values: Dict):
     # Load Jinja environment
     template_folders = ["comic_git_engine/templates"]
-    theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
+    theme = comic_info.get("Comic Settings", "Theme", fallback="default")
     if theme:
         template_folders.insert(0, f"your_content/themes/{theme}/templates")
     print(f"Template folders: {template_folders}")
@@ -540,7 +521,7 @@ def main(args: argparse.Namespace):
     utils.find_project_root()
     comic_info = read_info("your_content/comic_info.ini")
     comic_url, BASE_DIRECTORY = utils.get_comic_url(comic_info)
-    theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
+    theme = comic_info.get("Comic Settings", "Theme", fallback="default")
 
     processing_times.append(("Get comic settings", time()))
 
@@ -590,7 +571,7 @@ def parse_args():
     )
     parser.add_argument(
         "-p",
-        "--publish-all-posts",
+        "--publish-all-comics",
         action="store_true",
         help="Will publish all comics, even ones with a publish date set in the future."
     )
