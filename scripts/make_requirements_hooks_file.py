@@ -1,7 +1,7 @@
 import os
 from typing import Set
 
-from build_site import read_info, get_extra_comics_list, get_extra_comic_info, get_option
+from build_site import read_info, get_extra_comics_list, get_extra_comic_info
 from utils import find_project_root, str_to_list
 
 
@@ -16,14 +16,14 @@ def get_requirements(theme: str) -> Set[str]:
 def main():
     find_project_root()
     comic_info = read_info("your_content/comic_info.ini")
-    theme = get_option(comic_info, "Comic Settings", "Theme", default="default")
+    theme = comic_info.get("Comic Settings", "Theme", fallback="default")
     requirements = get_requirements(theme)
     print(requirements)
     # Build any extra comics that may be needed
     for extra_comic in get_extra_comics_list(comic_info):
         print(extra_comic)
         extra_comic_info = get_extra_comic_info(extra_comic, comic_info)
-        theme = get_option(extra_comic_info, "Comic Settings", "Theme")
+        theme = comic_info.get(extra_comic_info, "Comic Settings", "Theme")
         if theme:
             requirements.update(get_requirements(theme))
             print(requirements)
