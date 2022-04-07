@@ -106,6 +106,9 @@ def build_rss_feed(comic_info: RawConfigParser, comic_data_dicts: List[Dict]):
     add_base_tags_to_channel(channel, comic_url, comic_info)
     add_image_tag(channel, comic_url, comic_info)
 
+    if comic_info.getboolean("RSS Feed", "Newest first", fallback=False):
+        comic_data_dicts.reverse()
+
     for comic_data in comic_data_dicts:
         add_item(channel, comic_data, comic_url, comic_info)
 
