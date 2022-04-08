@@ -18,14 +18,14 @@ jobs:
           git push -f
       - name: Update revision branch
         run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(\d+\.\d+\.\d+\)"/\1/p' scripts/build_site.py)
+          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\..*\)"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
           git checkout $ENGINE_VERSION
           git reset --hard origin/master
           git push -f --set-upstream origin $ENGINE_VERSION
       - name: Update minor version branch
         run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(\d+\.\d+\)\.\d+"/\1/p' scripts/build_site.py)
+          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\)\..*"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
           git checkout $ENGINE_VERSION
           git reset --hard origin/master
