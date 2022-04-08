@@ -16,13 +16,20 @@ jobs:
           git checkout latest
           git reset --hard origin/master
           git push -f
-      - name: Get current engine version
+      - name: Update revision branch
         run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\)"/\1/p' scripts/build_site.py)
+          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(\d+\.\d+\.\d+\)"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
-      - name: Echo engine version
+          git checkout $ENGINE_VERSION
+          git reset --hard origin/master
+          git push -f --set-upstream origin $ENGINE_VERSION
+      - name: Update minor version branch
         run: |
+          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(\d+\.\d+\)\.\d+"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
+          git checkout $ENGINE_VERSION
+          git reset --hard origin/master
+          git push -f --set-upstream origin $ENGINE_VERSION
 #      - name: Run python build script
 #        run: |
 #          python comic_git_engine/scripts/build_site.py --delete-scheduled-posts
