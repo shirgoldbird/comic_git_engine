@@ -14,13 +14,14 @@ jobs:
         run: |
           git fetch --all
           git checkout latest
-          git merge master
+          git reset --hard origin/master
           git push -f
       - name: Update revision branch
         run: |
           export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\..*\)"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
           git checkout -b $ENGINE_VERSION
+          git reset --hard origin/master
           git merge master
           git push -f --set-upstream origin $ENGINE_VERSION
       - name: Update minor version branch
@@ -28,5 +29,5 @@ jobs:
           export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\)\..*"/\1/p' scripts/build_site.py)
           echo "Engine version: $ENGINE_VERSION"
           git checkout -b $ENGINE_VERSION
-          git merge master
+          git reset --hard origin/master
           git push -f --set-upstream origin $ENGINE_VERSION
