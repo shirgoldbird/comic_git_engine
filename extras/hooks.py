@@ -34,9 +34,25 @@ def extra_comic_dict_processing(comic_folder, comic_info, comic_data_dict):
     comic that's currently being built.
     :param comic_info: The current comic's comic_info.ini file parsed into a RawConfigParser object.
     :param comic_data_dict: A dictionary of the data for a given comic
-    :return: dict of additional global template variables
+    :return: A dictionary of the data for a given comic
     """
     return comic_data_dict
+
+
+def extra_get_storylines_processing(comic_folder, comic_info, storylines_dict):
+    """
+    Use this hook to do further processing on the `storylines` variable, which is used primarily to build the
+    Archive page. This is useful if you wanted to make your archive more complex, like breaking your comic
+    up into Volumes and Chapters instead of just Storylines.
+
+    :param comic_folder: If the main comic is being built, this will be blank. Otherwise, it's the name of the extra
+    comic that's currently being built.
+    :param comic_info: The current comic's comic_info.ini file parsed into a RawConfigParser object.
+    :param storylines_dict: Dictionary of all storylines, each containing an ordered list of all comics in that
+    storyline.
+    :return: Dictionary of all storylines
+    """
+    return storylines_dict
 
 
 def extra_global_values(comic_folder, comic_info, comic_data_dicts):

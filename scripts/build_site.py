@@ -152,7 +152,7 @@ def build_and_publish_comic_pages(comic_url: str, comic_folder: str, comic_info:
         home_page_text = ""
 
     # Write page info to comic HTML pages
-    show_uncategorized = comic_info.getboolean("Archive", "Show Uncategorized comics", fallback=True)
+
     # e.g. /base_dir/extra_comic
     comic_base_dir = f"{BASE_DIRECTORY}/{comic_folder}".rstrip("/")
     # e.g. /base_dir/your_content/extra_comic
@@ -174,7 +174,7 @@ def build_and_publish_comic_pages(comic_url: str, comic_folder: str, comic_info:
         "links": get_links_list(comic_info),
         "use_images_in_navigation_bar": comic_info.getboolean("Comic Settings", "Use images in navigation bar"),
         "use_thumbnails": comic_info.getboolean("Archive", "Use thumbnails"),
-        "storylines": get_storylines(comic_data_dicts, show_uncategorized),
+        "storylines": get_storylines(comic_info, comic_data_dicts),
         "home_page_text": home_page_text,
         "google_analytics_id": comic_info.get("Google Analytics", "Tracking ID", fallback=""),
         "scheduled_post_count": scheduled_post_count,
@@ -440,10 +440,11 @@ def process_comic_images(comic_info: RawConfigParser, comic_data_dicts: List[Dic
             process_comic_image(comic_info, comic_data["comic_path"])
 
 
-def get_storylines(comic_data_dicts: List[Dict], show_uncategorized: bool) -> OrderedDict:
+def get_storylines(comic_info: RawConfigParser, comic_data_dicts: List[Dict]) -> OrderedDict:
     # Start with an OrderedDict, so we can easily drop the pages we encounter in the proper buckets, while keeping
     # their proper order
     storylines_dict = OrderedDict()
+    show_uncategorized = comic_info.getboolean("Archive", "Show Uncategorized comics", fallback=True)
     for comic_data in comic_data_dicts:
         storyline = comic_data["_storyline"]
         if not storyline:
@@ -455,7 +456,12 @@ def get_storylines(comic_data_dicts: List[Dict], show_uncategorized: bool) -> Or
         storylines_dict[storyline].append(comic_data.copy())
     if "Uncategorized" in storylines_dict:
         storylines_dict.move_to_end("Uncategorized")
-    return storylines_dict
+    hooked_storylines_dict = run_hook(
+        comic_info.get("Comic Settings", "Theme", fallback="default"),
+        "extra_get_storylines_processing",
+        [comic_info, comic_data_dicts, storylines_dict]
+    )
+    return hooked_storylines_dict if hooked_storylines_dict is not None else storylines_dict
 
 
 def write_html_files(comic_folder: str, comic_info: RawConfigParser, comic_data_dicts: List[Dict], global_values: Dict):
