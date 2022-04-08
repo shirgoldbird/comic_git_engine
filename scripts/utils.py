@@ -2,14 +2,17 @@ import os
 from configparser import RawConfigParser
 from typing import List, Dict, Optional
 
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound
 
 jinja_environment: Optional[Environment] = None
 
 
-def build_jinja_environment(template_folders):
+def build_jinja_environment(comic_info: RawConfigParser, template_folders: List[str]):
     global jinja_environment
-    jinja_environment = Environment(loader=FileSystemLoader(template_folders))  # noqa
+    if comic_info.getboolean("Comic Settings", "Allow missing variables in templates", fallback=False):
+        jinja_environment = Environment(loader=FileSystemLoader(template_folders))  # noqa
+    else:
+        jinja_environment = Environment(loader=FileSystemLoader(template_folders), undefined=StrictUndefined)  # noqa
 
 
 def get_comic_url(comic_info: RawConfigParser):
