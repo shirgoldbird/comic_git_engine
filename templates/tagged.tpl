@@ -8,7 +8,7 @@
        the Python script that generates the HTML file. That value is dropped into the existing HTML with no changes.
        For example, if the value passed in to `tag` is `Avery`, then `Posts tagged with "{{ tag }}"` becomes
        `Posts tagged with "Avery"` #}
-    <h1 id="post-title">Posts tagged with "{{ tag }}"</h1>
+    <h1 id="post-title">{{ _title }}</h1>
 
     <div id="blurb">
         <div id="tagged">
@@ -17,7 +17,7 @@
                it runs through a list of all the pages with a particular tag and it generates a link
                for each of those. #}
             {%- for page in tagged_pages %}
-                <li><a href="{{ comic_base_dir }}/comic/{{ page["page_name"] }}/#comic-page">{{ page["page_title"] }}</a> -- {{ page["post_date"] }}</li>
+                <li><a href="{{ comic_base_dir }}/comic/{{ page["page_name"] }}/#comic-page">{{ page["_title"] }}</a> -- {{ page["_post_date"] }}</li>
             {%- endfor %}
             </ul>
         </div>

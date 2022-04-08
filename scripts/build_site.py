@@ -12,7 +12,7 @@ from glob import glob
 from importlib import import_module
 from json import dumps
 from time import strptime, time, strftime
-from typing import Dict, List, Tuple, Any, Union
+from typing import Dict, List, Tuple, Any
 
 from PIL import Image
 from markdown2 import Markdown
@@ -300,12 +300,42 @@ def load_transcripts_from_folder(transcripts: OrderedDict, transcripts_dir: str,
             transcripts[language] = MARKDOWN.convert(f.read().decode("utf-8"))
 
 
+def format_user_variable(k: str) -> str:
+    """
+    Option names passed in by the user from their info.ini files can have any string values like "Post date" or
+    "This page is full of spiders!!1". The option names are then passed in to Jinja2 templates as variable names.
+    Unfortunately, Jinja2 variable names are much more limited in what characters they can contain than
+    option names, i.e. no spaces or hyphens.
+
+    To work around this, we will replace all non-alphanumeric (and non-underscore) characters with an underscore.
+    Multiples of those characters in a row will be converted to a single underscore. We will also convert all
+    variables to lowercase to make their format more consistent with regular variable naming. We will then strip
+    leading and trailing underscores from the name.
+
+    Lastly, we will prepend the variable with an underscore to represent it as a converted user variable.
+    This will prevent user variables from accidentally overwriting system variables, like "page_num" or "comic_url".
+
+    Example: Post date => _post_date
+    :param k:
+    :return:
+    """
+    k = re.sub(r"[^a-z0-9_]+", "_", k.lower()).strip("_")
+    if k not in ("page_name"):
+        k = "_" + k
+    return k
+
+
 def create_comic_data(comic_folder: str, comic_info: RawConfigParser, page_info: dict,
                       first_id: str, previous_id: str, current_id: str, next_id: str, last_id: str):
     print("Building page {}...".format(page_info["page_name"]))
     page_dir = f"your_content/{comic_folder}comics/{page_info['page_name']}/"
-    archive_post_date = strftime(comic_info.get("Archive", "Date format"),
-                                 strptime(page_info["Post date"], comic_info.get("Comic Settings", "Date format")))
+    archive_post_date = strftime(
+        comic_info.get("Archive", "Date format"),
+        strptime(
+            page_info["Post date"],
+            comic_info.get("Comic Settings", "Date format")
+        )
+    )
     post_html = []
     post_text_paths = [
         f"your_content/{comic_folder}before post text.txt",
@@ -320,25 +350,20 @@ def create_comic_data(comic_folder: str, comic_info: RawConfigParser, page_info:
                 post_html.append(f.read().decode("utf-8"))
     post_html = MARKDOWN.convert("\n\n".join(post_html))
     d = {
-        "page_name": page_info["page_name"],
-        "filename": page_info["Filename"],
-        "comic_path": page_dir + page_info["Filename"],
+        "comic_path": os.path.join(page_dir, page_info["Filename"]),
         "thumbnail_path": os.path.join(page_dir, "thumbnail.jpg"),
-        "alt_text": html.escape(page_info["Alt text"]),
+        "escaped_alt_text": html.escape(page_info["Alt text"]),
         "first_id": first_id,
         "previous_id": previous_id,
         "current_id": current_id,
         "next_id": next_id,
         "last_id": last_id,
-        "page_title": page_info["Title"],
-        "post_date": page_info["Post date"],
         "archive_post_date": archive_post_date,
-        "storyline": None if "Storyline" not in page_info else page_info["Storyline"],
-        "characters": page_info["Characters"],
-        "tags": page_info["Tags"],
         "post_html": post_html,
         "transcripts": get_transcripts(comic_folder, comic_info, page_info["page_name"]),
     }
+    # Copy in existing page info options to the data dict, but format them so they're proper Jinja2 variable names
+    d.update({format_user_variable(k): v for k, v in page_info.items()})
     theme = comic_info.get("Comic Settings", "Theme", fallback="default")
     hook_result = run_hook(theme, "extra_comic_dict_processing", [comic_folder, comic_info, d])
     if hook_result:
@@ -420,7 +445,7 @@ def get_storylines(comic_data_dicts: List[Dict], show_uncategorized: bool) -> Or
     # their proper order
     storylines_dict = OrderedDict()
     for comic_data in comic_data_dicts:
-        storyline = comic_data["storyline"]
+        storyline = comic_data["_storyline"]
         if not storyline:
             if not show_uncategorized:
                 continue
@@ -470,8 +495,6 @@ def write_other_pages(comic_folder: str, comic_info: RawConfigParser, comic_data
             continue
         data_dict = {}
         data_dict.update(last_comic_page)
-        if page["title"]:
-            data_dict["page_title"] = page["title"]
         data_dict.update(global_values)
         utils.write_to_template(page["template_name"], html_path, data_dict)
 
@@ -481,12 +504,13 @@ def write_tagged_pages(comic_data_dicts: List[Dict], global_values: Dict):
         return
     tags = defaultdict(list)
     for page in comic_data_dicts:
-        for character in page.get("characters", []):
+        for character in page.get("_characters", []):
             tags[character].append(page)
-        for tag in page.get("tags", []):
+        for tag in page.get("_tags", []):
             tags[tag].append(page)
     for tag, pages in tags.items():
         data_dict = {
+            "_title": f"Posts tagged with {tag}",
             "tag": tag,
             "tagged_pages": pages
         }

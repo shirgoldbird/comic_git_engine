@@ -1,4 +1,3 @@
-import os
 from configparser import RawConfigParser
 from re import sub
 from time import strptime, strftime
@@ -64,7 +63,7 @@ def add_item(xml_parent, comic_data, comic_url, comic_info):
             e.attrib["type"] = "tag"
             e.text = tag
     comic_image_url = urljoin(comic_url, "your_content/comics/{}/{}".format(post_id, comic_data["filename"]))
-    html = build_rss_post(comic_image_url, comic_data.get("alt_text"), comic_data["post_html"])
+    html = build_rss_post(comic_image_url, comic_data.get("escaped_alt_text"), comic_data["post_html"])
     cdata_dict["post_id_" + post_id] = "<![CDATA[{}]]>".format(html)
     ElementTree.SubElement(item, "description").text = "{post_id_" + post_id + "}"
 
@@ -83,8 +82,6 @@ def pretty_xml(element):
     ).decode("utf-8")
     flattened_string = sub(r"\n\s*", "", raw_string)
     pretty_string = minidom.parseString(flattened_string).toprettyxml(indent="    ")
-    # print(pretty_string)
-    # return bytes(pretty_string.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"').replace(r"\n", "\n"), "utf-8")
     return pretty_string
 
 

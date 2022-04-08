@@ -29,7 +29,7 @@
                 <a href="{{ comic_base_dir }}/comic/{{ page.page_name }}/">
                 <div class="archive-thumbnail">
                     <div class="archive-thumbnail-page"><img src="{{ base_dir }}/{{ page.thumbnail_path }}"></div>
-                    <div class="archive-thumbnail-title">{{ page.page_title }}</div>
+                    <div class="archive-thumbnail-title">{{ page._title }}</div>
                     <div class="archive-thumbnail-post-date">{{ page.archive_post_date }}</div>
                 </div>
                 </a>
@@ -38,26 +38,26 @@
             {%- endif %}
             {%- endfor %}
         {%- else %}
-        <ul>
-        {%- for name, pages in storylines.items() %}
-            {%- if pages %}
-                {%- if storylines.keys() | list != ["Uncategorized"] %}
-                <li><a id="{{ name | replace(' ', '-') }}"></a>{{ name }}
-                <ul>
+            <ul>
+            {%- for name, pages in storylines.items() %}
+                {%- if pages %}
+                    {%- if storylines.keys() | list != ["Uncategorized"] %}
+                    <li><a id="{{ name | replace(' ', '-') }}"></a>{{ name }}
+                    <ul>
+                    {%- endif %}
+                    {%- for page in pages %}
+                        <li><a href="{{ comic_base_dir }}/comic/{{ page.page_name }}/">{{ page._title }}</a> -- {{ page._post_date }}</li>
+                    {%- endfor %}
+                    {%- if storylines.keys() | list != ["Uncategorized"] %}
+                    </ul>
+                    {%- endif %}
+                </li>
                 {%- endif %}
-                {%- for page in pages %}
-                    <li><a href="{{ comic_base_dir }}/comic/{{ page.page_name }}/">{{ page.page_title }}</a> -- {{ page.post_date }}</li>
-                {%- endfor %}
-                {%- if storylines.keys() | list != ["Uncategorized"] %}
-                </ul>
-                {%- endif %}
-            </li>
-            {%- endif %}
-        {%- endfor %}
-        </ul>
+            {%- endfor %}
+            </ul>
         {%- endif %}
+        </div>
     {%- else -%}
         <h3>No comics have been published yet.</h3>
     {%- endif -%}
-    </div>
 {% endblock %}
