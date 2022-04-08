@@ -237,6 +237,11 @@ def get_page_info_list(comic_folder: str, comic_info: RawConfigParser, delete_sc
             page_info["Storyline"] = page_info.get("Storyline", "")
             page_info["Characters"] = utils.str_to_list(page_info.get("Characters", ""))
             page_info["Tags"] = utils.str_to_list(page_info.get("Tags", ""))
+            # Remove all keys in page_info that start with !, so creators don't have to worry about these
+            # showing up in page_info_list.json
+            for key in page_info.copy():
+                if key.startswith("!"):
+                    del page_info[key]
             hook_result = run_hook(theme, "extra_page_info_processing",
                                    [comic_folder, comic_info, page_path, page_info])
             if hook_result:
