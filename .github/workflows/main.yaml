@@ -12,6 +12,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Update "latest" branch
         run: |
+          git fetch --all
           git checkout latest
           git merge master
       - name: Get current engine version
