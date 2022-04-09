@@ -12,6 +12,14 @@ jobs:
     steps:
       - name: Load repository
         uses: actions/checkout@v2
+      - name: Update version in build_site.py
+        run: |
+          sed 's/VERSION = ".*"/VERSION = "${{ github.event.inputs.version }}"/' scripts/build_site.py
+          git config --local user.name "Github Action"
+          git config --local user.email "action@github.com"
+          git add --all
+          git commit -m "Version ${{ github.event.inputs.version }}"
+          git push
       - name: Update "latest" branch
         run: |
           git fetch --all
