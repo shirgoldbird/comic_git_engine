@@ -16,14 +16,6 @@ jobs:
           git checkout latest
           git reset --hard origin/master
           git push -f
-      - name: Update revision branch
-        run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\..*\)"/\1/p' scripts/build_site.py)
-          echo "Engine version: $ENGINE_VERSION"
-          git checkout -b $ENGINE_VERSION
-          git reset --hard origin/master
-          git merge master
-          git push -f --set-upstream origin $ENGINE_VERSION
       - name: Update minor version branch
         run: |
           export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\)\..*"/\1/p' scripts/build_site.py)
@@ -31,3 +23,11 @@ jobs:
           git checkout -b $ENGINE_VERSION
           git reset --hard origin/master
           git push -f --set-upstream origin $ENGINE_VERSION
+      - name: Update revision branch
+        run: |
+          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\..*\)"/\1/p' scripts/build_site.py)
+          echo "Engine version: $ENGINE_VERSION"
+          git checkout -b $ENGINE_VERSION
+          git reset --hard origin/master
+          git tag v$ENGINE_VERSION
+          git push -f --tag --set-upstream origin $ENGINE_VERSION
