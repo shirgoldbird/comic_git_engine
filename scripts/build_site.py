@@ -92,15 +92,13 @@ def get_links_list(comic_info: RawConfigParser):
 
 def get_pages_list(comic_info: RawConfigParser, section_name="Pages"):
     if comic_info.has_section("Pages"):
-        return [{"template_name": option, "title": web_path(comic_info.get(section_name, option))}
+        return [{"template_name": option, "title": comic_info.get(section_name, option)}
                 for option in comic_info.options(section_name)]
     return []
 
 
 def get_extra_comics_list(comic_info: RawConfigParser) -> List[str]:
-    if comic_info.has_option("Comic Settings", "Extra comics"):
-        return utils.str_to_list(comic_info.get("Comic Settings", "Extra comics"))
-    return []
+    return utils.str_to_list(comic_info.get("Comic Settings", "Extra comics", fallback=""))
 
 
 def run_hook(theme: str, func: str, args: List[Any]) -> Any:
@@ -502,6 +500,8 @@ def write_other_pages(comic_folder: str, comic_info: RawConfigParser, comic_data
         data_dict = {}
         data_dict.update(last_comic_page)
         data_dict.update(global_values)
+        if page["title"]:
+            data_dict["_title"] = page["title"]
         utils.write_to_template(page["template_name"], html_path, data_dict)
 
 
