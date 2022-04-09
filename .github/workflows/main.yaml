@@ -1,11 +1,13 @@
 on:
   workflow_dispatch:
-    branches:
-      - working
+    inputs:
+      version:
+        description: 'New script version'
+        required: true
 
 
 jobs:
-  build:
+  Update Version and Build Branches:
     runs-on: ubuntu-latest
     steps:
       - name: Load repository
@@ -18,15 +20,16 @@ jobs:
           git push -f
       - name: Update minor version branch
         run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\)\..*"/\1/p' scripts/build_site.py)
-          echo "Engine version: $ENGINE_VERSION"
+          export INPUT=${{ github.event.inputs.version }}
+          export ENGINE_VERSION=$(echo $INPUT | sed 's/\.[^.]*$//')
+          echo "Engine version (minor only): $ENGINE_VERSION"
           git checkout -b $ENGINE_VERSION
           git reset --hard origin/master
           git push -f --set-upstream origin $ENGINE_VERSION
       - name: Update revision branch
         run: |
-          export ENGINE_VERSION=$(sed -n 's/VERSION = "\(.*\..*\..*\)"/\1/p' scripts/build_site.py)
-          echo "Engine version: $ENGINE_VERSION"
+          export ENGINE_VERSION=${{ github.event.inputs.version }}
+          echo "Engine version (full): $ENGINE_VERSION"
           git checkout -b $ENGINE_VERSION
           git reset --hard origin/master
           git tag v$ENGINE_VERSION
