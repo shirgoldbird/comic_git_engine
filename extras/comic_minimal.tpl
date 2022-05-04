@@ -5,6 +5,8 @@
     <link rel="stylesheet" type="text/css" href="{{ base_dir }}/css/advanced_stylesheet.css">
     {# Style sheet for colors and fonts #}
     <link rel="stylesheet" type="text/css" href="{{ base_dir }}/your_content/themes/{{ theme }}/css/stylesheet.css">
+    {# Enable responsiveness #}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ _title }} - {{ comic_title }}</title>
 </head>
 <body>
